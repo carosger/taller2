@@ -1,0 +1,133 @@
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+struct Atleta {
+    string nombre;
+    int numero;
+    double promedio;
+    int tiempos[2];
+};
+
+struct Nodo {
+    Atleta atleta;
+    Nodo* siguiente;
+};
+
+class ListaEnlazada {
+public:
+    ListaEnlazada() : cabeza(nullptr) {}
+
+    void agregar(Atleta atleta) {
+        Nodo* nuevo = new Nodo{ atleta, cabeza };
+        cabeza = nuevo;
+    }
+
+    Nodo* obtenerCabeza() const {
+        return cabeza;
+    }
+
+private:
+    Nodo* cabeza;
+};
+
+class Pila {
+public:
+    Pila() : tope(nullptr) {}
+
+    void agregar(double promedio) {
+        Nodo* nuevo = new Nodo{ promedio, tope };
+        tope = nuevo;
+    }
+
+    double obtenerTope() const {
+        return tope->promedio;
+    }
+
+    void eliminarTope() {
+        Nodo* temp = tope;
+        tope = tope->siguiente;
+        delete temp;
+    }
+
+    bool estaVacia() const {
+        return tope == nullptr;
+    }
+
+private:
+    struct Nodo {
+        double promedio;
+        Nodo* siguiente;
+    };
+
+    Nodo* tope;
+};
+
+void intercambiar(Atleta& a, Atleta& b) {
+    Atleta temp = a;
+    a = b;
+    b = temp;
+}
+
+void ordenarPorPromedio(Atleta atletas[], int n) {
+    for (int i = 0; i < n-1; i++) {
+        for (int j = 0; j < n-i-1; j++) {
+            if (atletas[j].promedio < atletas[j+1].promedio) {
+                intercambiar(atletas[j], atletas[j+1]);
+            }
+        }
+    }
+}
+
+int main() {
+    const int RONDAS = 2;
+    int n_atletas;
+
+    cout << "Ingrese la cantidad de atletas: ";
+    cin >> n_atletas;
+
+    Atleta atletas[n_atletas];
+    ListaEnlazada lista;
+
+    for (int i = 0; i < n_atletas; i++) {
+        Atleta atleta;
+        cout << "Ingrese el nombre del atleta " << i+1 << ": ";
+        cin >> atleta.nombre;
+        cout << "Ingrese el numero asignado al atleta " << i+1 << ": ";
+        cin >> atleta.numero;
+        cout << "Ingrese el tiempo de la primera ronda del atleta " << i+1 << ": ";
+        cin >> atleta.tiempos[0];
+        cout << "Ingrese el tiempo de la segunda ronda del atleta " << i+1 << ": ";
+        cin >> atleta.tiempos[1];
+        lista.agregar(atleta);
+    }
+
+    Pila pila_promedios;
+    Nodo* nodo_actual = lista.obtenerCabeza();
+    while (nodo_actual != nullptr) {
+        Atleta& atleta = nodo_actual->atleta;
+        double promedio = (atleta.tiempos[0] + atleta.tiempos[1]) / static_cast<double>(RONDAS);
+pila_promedios.agregar(promedio);
+nodo_actual = nodo_actual->siguiente;
+}
+double promedio_general = 0;
+for (int i = 0; i < n_atletas; i++) {
+    Atleta& atleta = lista.obtenerCabeza()->atleta;
+    double promedio = pila_promedios.obtenerTope();
+    promedio_general += promedio;
+    atleta.promedio = promedio;
+    pila_promedios.eliminarTope();
+}
+promedio_general /= n_atletas;
+
+ordenarPorPromedio(atletas, n_atletas);
+
+cout << "El promedio general fue de " << promedio_general << endl;
+cout << "Los atletas ordenados por promedio son: " << endl;
+for (int i = 0; i < n_atletas; i++) {
+    cout << atletas[i].nombre << " con promedio " << atletas[i].promedio << endl;
+}
+
+return 0;
+}
